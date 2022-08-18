@@ -1,0 +1,11 @@
+OccurrencePrecinctCode,GeoCodeLabel,Number_of_Motor_Vehicle_Collisions,Vehicles_or_Motorists_Involved,Injury_or_Fatal_Collisions,MotoristsInjured,MotoristsKilled,PassengInjured,PassengKilled,CyclistsInjured,CyclistsKilled,PedestrInjured,PedestrKilled,Bicycle
+C,CITYWIDE,8559.0,16699.0,3456.0,1952.0,14.0,1600.0,7.0,528.0,3.0,621.0,11.0,637.0
+M,MANHATTAN,1419.0,2565.0,544.0,216.0,1.0,205.0,0.0,142.0,1.0,123.0,1.0,200.0
+B,BRONX,1517.0,2973.0,618.0,367.0,5.0,351.0,1.0,71.0,2.0,108.0,4.0,85.0
+K,BROOKLYN,2801.0,5470.0,1216.0,632.0,3.0,521.0,1.0,218.0,0.0,248.0,4.0,239.0
+Q,QUEENS,2370.0,4805.0,917.0,613.0,4.0,428.0,2.0,85.0,0.0,127.0,1.0,100.0
+S,STATEN ISLAND,452.0,886.0,161.0,124.0,1.0,95.0,3.0,12.0,0.0,15.0,1.0,13.0
+NOTES:,,,,,,,,,,,,,
+"The persons involved reflects all motorists, however they do not reflect other persons involved unless they were injured or killed.",,,,,,,,,,,,,
+The category of “Motorist” includes the owner of a parked vehicle. Contributing factors are listed when known.,,,,,,,,,,,,,
+All figures are preliminary and subject to change.,,,,,,,,,,,,,
