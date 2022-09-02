@@ -19,7 +19,7 @@ from tempfile import NamedTemporaryFile
 def extract_choques_nyc_from_api():
     client_choques_nyc = Socrata('data.cityofnewyork.us',
                   'P5yEsPDgBpkSlfs3G7Kg0DM6o',)
-    results_choques_nyc = client_choques_nyc.get("h9gi-nx95", limit=100000)
+    results_choques_nyc = client_choques_nyc.get("h9gi-nx95", limit=800000)
     results_df_choques_nyc = pd.DataFrame.from_records(results_choques_nyc)
     return results_df_choques_nyc.to_csv("extracted_choques_nyc.csv")
 
@@ -27,7 +27,7 @@ def extract_choques_nyc_from_api():
 def extract_robo_from_api():
     client_robo = Socrata('data.cityofnewyork.us',
                   'P5yEsPDgBpkSlfs3G7Kg0DM6o',)
-    results_robo = client_robo.get("5uac-w243", limit=100000)
+    results_robo = client_robo.get("5uac-w243", limit=258000)
     results_df_robo = pd.DataFrame.from_records(results_robo)
     return results_df_robo.to_csv("extracted_robo.csv")
 
