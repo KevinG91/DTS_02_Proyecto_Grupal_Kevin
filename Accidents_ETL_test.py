@@ -756,10 +756,10 @@ def transform_causa():
 
 
 def merge_master_data():
-    df_causa = pd.read_csv("causa_sql.csv")
-    df_edad = pd.read_csv("edad_sql.csv")
-    df_principal = pd.read_csv("principal_sql.csv")
-    df_robo = pd.read_csv("robo_sql.csv")
+    df_causa = pd.read_csv('causa_sql.csv') #listo
+    df_edad = pd.read_csv('edad_sql.csv') #listo
+    df_principal = pd.read_csv('principal_sql.csv') #listo
+    df_robo = pd.read_csv('robo_sql.csv') #listo
     frecuencia_robo =df_robo.groupby(['localidad']).count()
     frecuencia_robo.index
     robo= pd.DataFrame({'Localidad': frecuencia_robo.index, 'Cantidad_robos': frecuencia_robo['delito']})
@@ -861,7 +861,8 @@ def merge_master_data():
                     how ='left')
     merge_causa_ppal.drop(['anio_del_vehiculo'], axis=1, inplace=True)
     merge_causa_ppal.set_index('id_choque',inplace=True)
-    merge_causa_ppal.to_csv("Accidents_Master.csv")
+    merge_causa_ppal2= merge_causa_ppal[merge_causa_ppal['Id_Fecha']==1326]
+    merge_causa_ppal2.to_csv('Accidentes2.csv')
 
 
 extract_choques_nyc_from_api()
