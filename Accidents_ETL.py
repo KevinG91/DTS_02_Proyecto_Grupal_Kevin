@@ -23,40 +23,40 @@ default_args={
 }
 
 
-def extract_main_from_api():
-    client = Socrata('data.cityofnewyork.us',
-                'P5yEsPDgBpkSlfs3G7Kg0DM6o',)
-    results = client.get("h9gi-nx95", limit=100000)
-    main_df = pd.DataFrame.from_records(results)
-    return main_df.to_csv("/home/kevin/airflow/dataset_dump/extracted_main.csv")
+def extract_choques_nyc_from_api():
+    client_choques_nyc = Socrata('data.cityofnewyork.us',
+                  'P5yEsPDgBpkSlfs3G7Kg0DM6o',)
+    results_choques_nyc = client_choques_nyc.get("h9gi-nx95", limit=800000)
+    results_df_choques_nyc = pd.DataFrame.from_records(results_choques_nyc)
+    return results_df_choques_nyc.to_csv("/home/kevin/airflow/dataset_dump/extracted_choques_nyc.csv")
 
 
-def extract_crime_from_api():
-    client = Socrata('data.cityofnewyork.us',
-                'P5yEsPDgBpkSlfs3G7Kg0DM6o',)
-    results = client.get("5uac-w243", limit=100000)
-    crime_df = pd.DataFrame.from_records(results)
-    return crime_df.to_csv("/home/kevin/airflow/dataset_dump/extracted_crime.csv")
+def extract_robo_from_api():
+    client_robo = Socrata('data.cityofnewyork.us',
+                  'P5yEsPDgBpkSlfs3G7Kg0DM6o',)
+    results_robo = client_robo.get("5uac-w243", limit=258000)
+    results_df_robo = pd.DataFrame.from_records(results_robo)
+    return results_df_robo.to_csv("/home/kevin/airflow/dataset_dump/extracted_robo.csv")
 
 
-def extract_cause_from_api():
-    client = Socrata('data.cityofnewyork.us',
-                'P5yEsPDgBpkSlfs3G7Kg0DM6o',)
-    results = client.get("bm4k-52h4", limit=100000)
-    cause_df = pd.DataFrame.from_records(results)
-    return cause_df.to_csv("/home/kevin/airflow/dataset_dump/extracted_cause.csv")
+def extract_edad_from_api():
+    client_edad = Socrata('data.cityofnewyork.us',
+                  'P5yEsPDgBpkSlfs3G7Kg0DM6o',)
+    results_edad = client_edad.get("bm4k-52h4", limit=1000000)
+    results_df_edad = pd.DataFrame.from_records(results_edad)
+    return results_df_edad.to_csv("/home/kevin/airflow/dataset_dump/extracted_edad.csv")
 
 
-def extract_age_from_api():
-    client = Socrata('data.cityofnewyork.us',
-                'P5yEsPDgBpkSlfs3G7Kg0DM6o',)
-    results2 = client.get("f55k-p6yu", limit=100000)
-    age_df = pd.DataFrame.from_records(results2)
-    return age_df.to_csv("/home/kevin/airflow/dataset_dump/extracted_age.csv")
+def extract_edad_2_from_api():
+    client_edad = Socrata('data.cityofnewyork.us',
+                  'P5yEsPDgBpkSlfs3G7Kg0DM6o',)
+    results_edad_2 = client_edad.get("f55k-p6yu", limit=1000000)
+    results_df_edad_2 = pd.DataFrame.from_records(results_edad_2)
+    return results_df_edad_2.to_csv("/home/kevin/airflow/dataset_dump/extracted_edad_2.csv")
 
 
 def transform_main():
-    main_df = pd.read_csv("/home/kevin/airflow/dataset_dump/extracted_main.csv")
+    main_df = pd.read_csv("/home/kevin/airflow/dataset_dump/extracted_choques_nyc.csv")
     main_df['crash_date'].replace({'T00:00:00.000':''}, regex=True, inplace=True)
     main_df['crash_date_time']=pd.to_datetime(main_df['crash_date'] + main_df['crash_time'], format='%Y-%m-%d%H:%M')
     choques_nyc=main_df[main_df['crash_date_time'].dt.year.isin([2019,2020,2021,2022])]
@@ -706,31 +706,52 @@ def transform_main():
     principal_sql=prototipo 
     principal_sql.drop('fecha_y_hora', axis=1, inplace=True)
     prototipo['auto_causante']=prototipo['auto_causante'].str.replace('[^\w\s]', '')
-    prototipo.to_csv("/home/kevin/airflow/dataset_dump/transformed_main.csv")
+    prototipo.to_csv("/home/kevin/airflow/dataset_dump/principal_sql.csv")
 
 
-def transform_crime():
-    crime_df= pd.read_csv("/home/kevin/airflow/dataset_dump/extracted_crime.csv")
-    crime_df['cmplnt_to_dt'].replace({'T00:00:00.000':''}, regex=True, inplace=True)
-    crime_df['fecha_y_hora']=pd.to_datetime(crime_df['cmplnt_to_dt'] + crime_df['cmplnt_fr_tm'], format='%Y-%m-%d%H:%M:%S')
-    crimen=crime_df[crime_df['fecha_y_hora'].dt.year.isin([2019,2020,2021,2022])]
+def transform_robo():
+    results_df_robo= pd.read_csv("/home/kevin/airflow/dataset_dump/extracted_robo.csv")
+    results_df_robo['cmplnt_to_dt'].replace({'T00:00:00.000':''}, regex=True, inplace=True)
+    results_df_robo['fecha_y_hora']=pd.to_datetime(results_df_robo['cmplnt_to_dt'] + results_df_robo['cmplnt_fr_tm'], format='%Y-%m-%d%H:%M:%S')
+    crimen=results_df_robo[results_df_robo['fecha_y_hora'].dt.year.isin([2019,2020,2021,2022])]
     robo= pd.DataFrame().assign(fecha_y_hora= crimen['fecha_y_hora'], delito= crimen['pd_desc'], localidad= crimen['boro_nm'],latitud= crimen['latitude'],longitud= crimen['longitude'],)
     robo['anio'] = robo['fecha_y_hora'].dt.year
     robo['mes'] = robo['fecha_y_hora'].dt.month
     robo['dia'] = robo['fecha_y_hora'].dt.day
     robo['hora'] = robo['fecha_y_hora'].dt.time
-    robo.drop(robo[robo.delito != 'ROBBERY,CAR JACKING'].index).reset_index(drop=True)
-    robo.drop('fecha_y_hora', axis=1, inplace=True)
-    robo.drop('hora', axis=1, inplace=True)
-    return robo.to_csv("/home/kevin/airflow/dataset_dump/transformed_crime.csv")
+    robo= robo.drop(robo[robo.delito != 'ROBBERY,CAR JACKING'].index).reset_index(drop=True)
+    robo_sql=robo
+    robo_sql.drop('fecha_y_hora', axis=1, inplace=True)
+    robo_sql.drop('hora', axis=1, inplace=True)
+    return robo_sql.to_csv("/home/kevin/airflow/dataset_dump/robo_sql.csv")
+
+def transform_edad():
+    results_df_edad= pd.read_csv("/home/kevin/airflow/dataset_dump/extracted_edad.csv")
+    results_df_edad['crash_date'].replace({'T00:00:00.000':''}, regex=True, inplace=True)
+    results_df_edad['crash_date_time']=pd.to_datetime(results_df_edad['crash_date'] + results_df_edad['crash_time'], format='%Y-%m-%d%H:%M')
+    choques_df=results_df_edad[results_df_edad['crash_date_time'].dt.year.isin([2019,2020,2021,2022])].reset_index(drop=True)
+    return choques_df.to_csv("/home/kevin/airflow/dataset_dump/choques.csv")
+
+def transform_edad_2():
+    results_df_edad_2= pd.read_csv("/home/kevin/airflow/dataset_dump/extracted_edad_2.csv")
+    results_df_edad_2['crash_date'].replace({'T00:00:00.000':''}, regex=True, inplace=True)
+    results_df_edad_2['crash_date_time']=pd.to_datetime(results_df_edad_2['crash_date'] + results_df_edad_2['crash_time'], format='%Y-%m-%d%H:%M')
+    personas_df=results_df_edad_2[results_df_edad_2['crash_date_time'].dt.year.isin([2019,2020,2021,2022])].reset_index(drop=True)
+    edad = pd.DataFrame().assign(id_choque=personas_df['collision_id'], edad=personas_df['person_age'])
+    edad=edad.dropna(subset=['edad']).reset_index(drop=True)
+    edad['edad'] = edad['edad'].astype(int)
+    edad = edad.drop(edad[edad.edad > 80].index).reset_index(drop=True)
+    edad = edad.drop(edad[edad.edad < 16].index).reset_index(drop=True)
+    bins= [0,16,22,36,51,102]
+    labels = ['menor','adolescente','adulto_joven','adulto','adulto_mayor']
+    edad['rango_etario'] = pd.cut(edad['edad'], bins=bins, labels=labels, right=False)
+    return edad.to_csv("/home/kevin/airflow/dataset_dump/edad_sql.csv")
 
 
-def transform_cause():
-    cause_df= pd.read_csv("/home/kevin/airflow/dataset_dump/extracted_cause.csv")
-    cause_df['crash_date'].replace({'T00:00:00.000':''}, regex=True, inplace=True)
-    cause_df['crash_date_time']=pd.to_datetime(cause_df['crash_date'] + cause_df['crash_time'], format='%Y-%m-%d%H:%M')
-    choques_df=cause_df[cause_df['crash_date_time'].dt.year.isin([2019,2020,2021,2022])].reset_index(drop=True)
+def transform_causa():
+    choques_df= pd.read_csv("/home/kevin/airflow/dataset_dump/choques.csv")
     causa_df = pd.DataFrame().assign(id_choque=choques_df['collision_id'], fecha_hora=choques_df['crash_date_time'], sexo=choques_df['driver_sex'],anio_del_vehiculo=choques_df['vehicle_year'])
+    causa_df['fecha_hora']= pd.to_datetime(causa_df['fecha_hora'])
     causa_df['anio'] = causa_df['fecha_hora'].dt.year
     causa_df['mes'] = causa_df['fecha_hora'].dt.month
     causa_df['dia'] = causa_df['fecha_hora'].dt.day
@@ -738,30 +759,14 @@ def transform_cause():
     causa_df = causa_df.set_index('id_choque')
     causa_df.drop('fecha_hora', axis=1, inplace=True)
     causa_df.drop('hora', axis=1, inplace=True)
-    return causa_df.to_csv("/home/kevin/airflow/dataset_dump/transformed_cause.csv")
-
-
-def transform_age():
-    age_df= pd.read_csv("/home/kevin/airflow/dataset_dump/extracted_age.csv")
-    age_df['crash_date'].replace({'T00:00:00.000':''}, regex=True, inplace=True)
-    age_df['crash_date_time']=pd.to_datetime(age_df['crash_date'] + age_df['crash_time'], format='%Y-%m-%d%H:%M')
-    personas_df=age_df[age_df['crash_date_time'].dt.year.isin([2019,2020,2021,2022])].reset_index(drop=True)
-    edad = pd.DataFrame().assign(id_choque=personas_df['collision_id'], edad=personas_df['person_age'])
-    edad=edad.dropna(subset=['edad']).reset_index(drop=True)
-    edad['edad'] = edad['edad'].astype(int)
-    edad = edad.drop(edad[edad.edad > 80].index).reset_index(drop=True)
-    edad = edad.drop(edad[edad.edad < 16].index).reset_index(drop=True)
-    bins= [0,16,22,36,51,102]
-    labels = ['menor','adolescente','adulto','adulto_mayor','mayor']
-    edad['rango_etario'] = pd.cut(edad['edad'], bins=bins, labels=labels, right=False)
-    return edad.to_csv("/home/kevin/airflow/dataset_dump/transformed_age.csv")
+    return causa_df.to_csv("/home/kevin/airflow/dataset_dump/causa_sql.csv")
 
 
 def merge_master_data():
-    df_causa = pd.read_csv("/home/kevin/airflow/dataset_dump/transformed_cause.csv")
-    df_edad = pd.read_csv("/home/kevin/airflow/dataset_dump/transformed_age.csv")
-    df_principal = pd.read_csv("/home/kevin/airflow/dataset_dump/transformed_main.csv")
-    df_robo = pd.read_csv("/home/kevin/airflow/dataset_dump/transformed_crime.csv")
+    df_causa = pd.read_csv("/home/kevin/airflow/dataset_dump/causa_sql.csv") 
+    df_edad = pd.read_csv("/home/kevin/airflow/dataset_dump/edad_sql.csv")
+    df_principal = pd.read_csv("/home/kevin/airflow/dataset_dump/principal_sql.csv")
+    df_robo = pd.read_csv("/home/kevin/airflow/dataset_dump/robo_sql.csv") #listo
     frecuencia_robo =df_robo.groupby(['localidad']).count()
     frecuencia_robo.index
     robo= pd.DataFrame({'Localidad': frecuencia_robo.index, 'Cantidad_robos': frecuencia_robo['delito']})
@@ -846,7 +851,7 @@ def merge_master_data():
     id_letalidad.sort()
     x = list(range(len(id_letalidad)))
     #len(['Lesionados','Lesionados',z])
-    id_letalidad = pd.DataFrame({'Id_Letalidad':x,'letalidad':id_letalidad,'Status_invoulucrados':['Lesionados','Lesionados','Muertes' ,'Muertes' ,'Muertes' ,'Muertes' ,'Muertes' ,'Muertes' ,'Muertes' ,'Muertes' ,'Muertes' ,'Muertes' ,'Muertes' ,'Muertes' ,'Muertes' ,'Muertes' ,'Muertes' ,'Muertes' ,'Muertes' ,'Muertes' ,'Muertes' ,'Muertes' ,'Muertes' ,'Muertes' ,'Muertes']})
+    id_letalidad = pd.DataFrame({'Id_Letalidad':x,'letalidad':id_letalidad,'Status_involucrados':['Lesionados','Lesionados','Muertes' ,'Muertes' ,'Muertes' ,'Muertes' ,'Muertes' ,'Muertes' ,'Muertes' ,'Muertes' ,'Muertes' ,'Muertes' ,'Muertes' ,'Muertes' ,'Muertes' ,'Muertes' ,'Muertes' ,'Muertes' ,'Muertes' ,'Muertes' ,'Muertes' ,'Muertes' ,'Muertes' ,'Muertes' ,'Muertes']})
     merge_causa_ppal= pd.merge(merge_causa_ppal,
                     id_letalidad[['Id_Letalidad','letalidad']],
                     on=['letalidad'],
@@ -863,20 +868,21 @@ def merge_master_data():
                     how ='left')
     merge_causa_ppal.drop(['anio_del_vehiculo'], axis=1, inplace=True)
     merge_causa_ppal.set_index('id_choque',inplace=True)
-    merge_causa_ppal.to_csv("/home/kevin/airflow/dataset_dump/Accidents_Master.csv")
+    merge_causa_ppal2= merge_causa_ppal[merge_causa_ppal['Id_Fecha']==1326]
+    merge_causa_ppal2.to_csv('Accidentes_Master.csv')
 
 
 def upload_master_to_s3():
-    s3_hook= S3Hook(aws_conn_id= "minio_conn")
+    s3_hook= S3Hook(aws_conn_id= "AWS_S3_conn")
     s3_hook.load_file(
-        filename= "/home/kevin/airflow/dataset_dump/Accidents_Main.csv",
-        key= "Accidents_Master.csv",
-        bucket_name= "airflow",
+        filename= "/home/kevin/airflow/dataset_dump/Accidentes_Master.csv",
+        key= "Accidentes_Master.csv",
+        bucket_name= "proyecto-henry",
         replace= True)
 
 
 with DAG(
-    dag_id= 'Accidents_ETL_v07',
+    dag_id= 'Accidentes_ETL_Final',
     default_args= default_args,
     start_date= datetime(2022, 8, 30),
     schedule_interval= '@Monthly',
@@ -884,60 +890,65 @@ with DAG(
 
 
     task1= PythonOperator(
-        task_id= "extracting_main_from_api",
-        python_callable= extract_main_from_api
+        task_id= "extracting_choques_nyc_from_api",
+        python_callable= extract_choques_nyc_from_api
     )
 
 
     task2= PythonOperator(
-        task_id= "extracting_crime_from_api",
-        python_callable= extract_crime_from_api
+        task_id= "extracting_robo_from_api",
+        python_callable= extract_robo_from_api
     )
 
 
     task3= PythonOperator(
-        task_id= "extracting_cause_from_api",
-        python_callable= extract_cause_from_api
+        task_id= "extracting_edad_from_api",
+        python_callable= extract_edad_from_api
     )
 
 
     task4= PythonOperator(
-        task_id= "extracting_age_from_api",
-        python_callable= extract_age_from_api
+        task_id= "extracting_edad_2_from_api",
+        python_callable= extract_edad_2_from_api
     )
 
 
     task5= PythonOperator(
-        task_id= "transforming_main_from_api_extraction",
+        task_id= "transforming_choques_nyc_from_api_extraction",
         python_callable= transform_main
     )
 
     task6= PythonOperator(
-        task_id= "transforming_crime_from_api_extraction",
-        python_callable= transform_crime
+        task_id= "transforming_robo_from_api_extraction",
+        python_callable= transform_robo
     )
 
 
     task7= PythonOperator(
-        task_id= "transforming_cause_from_api_extraction",
-        python_callable= transform_cause
+        task_id= "transforming_edad_from_api_extration",
+        python_callable= transform_edad
     )
 
-
     task8= PythonOperator(
-        task_id= "transforming_age_from_api_extration",
-        python_callable= transform_age
+        task_id= "transforming_edad_2_from_api_extraction",
+        python_callable= transform_edad_2
     )
 
     task9= PythonOperator(
-        task_id= "merging_into_master",
+        task_id= "transforming_cause_from_api_extraction",
+        python_callable= transform_causa
+    )
+
+
+    task10= PythonOperator(
+        task_id= "merging_everything_into_master",
         python_callable= merge_master_data
     )
 
-    task10= PythonOperator(
+    task11= PythonOperator(
         task_id= "uploading_master_to_s3",
         python_callable= upload_master_to_s3
     )
 
 
-    task1 >> task2 >> task3 >> task4 >> task5 >> task6 >> task7 >> task8 >> task9 >> task10
+    task1 >> task2 >> task3 >> task4 >> task5 >> task6 >> task7 >> task8 >> task9 >> task10 >> task11
